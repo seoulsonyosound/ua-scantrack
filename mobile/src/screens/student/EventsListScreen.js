@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, SafeAreaView, Text, Pressable, View } from "react-native";
 import { api } from "../../api/client";
+import { PrimaryButton } from "../../components/PrimaryButton";
 
 export function EventsListScreen({ navigation }) {
   const [events, setEvents] = useState([]);
@@ -18,7 +19,7 @@ export function EventsListScreen({ navigation }) {
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1, padding: 16 }}>
+    <SafeAreaView style={{ flex: 1, padding: 16, gap: 12 }}>
       {busy ? <ActivityIndicator /> : null}
 
       <View style={{ gap: 10 }}>
@@ -43,6 +44,8 @@ export function EventsListScreen({ navigation }) {
         ))}
         {!busy && events.length === 0 ? <Text>No upcoming events.</Text> : null}
       </View>
+
+      <PrimaryButton title="Back" onPress={() => navigation.goBack()} />
     </SafeAreaView>
   );
 }

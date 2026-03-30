@@ -1,24 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { Alert, SafeAreaView, Text, View, Pressable } from "react-native";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 
-import { listEvents, downloadEventAttendanceCsv, downloadEventAttendeesCsv } from "../../api/events";
+import { listEvents } from "../../api/events";
+import { downloadReportCsv, downloadAttendeesCsv } from "../../api/reports";
+import { PrimaryButton } from "../../components/PrimaryButton";
 
-export function AdminReportsScreen() {
+export function AdminReportsScreen({ navigation }) {
   const [events, setEvents] = useState([]);
   const [busyId, setBusyId] = useState(null);
 
   useEffect(() => {
     (async () => {
-      const data = await listEvents();
-      setEvents(data);
+      try {
+        const data = await listEvents();
+        setEvents(data);
+      } catch (e) {
+        Alert.alert("Failed", e?.response?.data?.detail ?? "Could not load events.");
+      }
     })();
   }, []);
 
   async function shareCsv({ csvText, filename }) {
     const uri = FileSystem.documentDirectory + filename;
-    await FileSystem.writeAsStringAsync(uri, csvText, { encoding: FileSystem.EncodingType.UTF8 });
+
+    // ✅ legacy API (no deprecation crash) + no EncodingType
+    await FileSystem.writeAsStringAsync(uri, csvText);
 
     const canShare = await Sharing.isAvailableAsync();
     if (!canShare) {
@@ -37,14 +45,14 @@ export function AdminReportsScreen() {
     setBusyId(ev.id);
     try {
       if (type === "attendance") {
-        const csvText = await downloadEventAttendanceCsv(ev.id);
+        const csvText = await downloadReportCsv(ev.id);
         await shareCsv({ csvText, filename: `attendance_event_${ev.id}_${ev.event_date}.csv` });
       } else {
-        const csvText = await downloadEventAttendeesCsv(ev.id);
+        const csvText = await downloadAttendeesCsv(ev.id);
         await shareCsv({ csvText, filename: `attendees_event_${ev.id}_${ev.event_date}.csv` });
       }
     } catch (e) {
-      Alert.alert("Failed", e?.response?.data?.detail ?? "Could not download.");
+      Alert.alert("Failed", String(e?.message ?? e));
     } finally {
       setBusyId(null);
     }
@@ -58,10 +66,18 @@ export function AdminReportsScreen() {
         {events.map((ev) => (
           <View
             key={ev.id}
-            style={{ borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 12, padding: 12, gap: 8 }}
+            style={{
+              borderWidth: 1,
+              borderColor: "#e5e7eb",
+              borderRadius: 12,
+              padding: 12,
+              gap: 8,
+            }}
           >
             <Text style={{ fontWeight: "900" }}>{ev.title}</Text>
-            <Text style={{ color: "#6b7280" }}>{ev.event_date} • {ev.venue}</Text>
+            <Text style={{ color: "#6b7280" }}>
+              {ev.event_date} • {ev.venue}
+            </Text>
 
             <View style={{ flexDirection: "row", gap: 10 }}>
               <Pressable
@@ -75,9 +91,7 @@ export function AdminReportsScreen() {
                   alignItems: "center",
                 }}
               >
-                <Text style={{ color: "white", fontWeight: "700" }}>
-                  {busyId === ev.id ? "..." : "Attendance CSV"}
-                </Text>
+                <Text style={{ color: "white", fontWeight: "700" }}>{busyId === ev.id ? "..." : "Attendance CSV"}</Text>
               </Pressable>
 
               <Pressable
@@ -91,14 +105,14 @@ export function AdminReportsScreen() {
                   alignItems: "center",
                 }}
               >
-                <Text style={{ color: "white", fontWeight: "700" }}>
-                  {busyId === ev.id ? "..." : "Attendees CSV"}
-                </Text>
+                <Text style={{ color: "white", fontWeight: "700" }}>{busyId === ev.id ? "..." : "Attendees CSV"}</Text>
               </Pressable>
             </View>
           </View>
         ))}
       </View>
+
+      <PrimaryButton title="Back" onPress={() => navigation.goBack()} />
     </SafeAreaView>
   );
 }

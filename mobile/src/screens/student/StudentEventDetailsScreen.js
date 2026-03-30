@@ -21,16 +21,18 @@ export function StudentEventDetailsScreen({ route, navigation }) {
 
   if (busy) {
     return (
-      <SafeAreaView style={{ padding: 16 }}>
+      <SafeAreaView style={{ padding: 16, gap: 12 }}>
         <ActivityIndicator />
+        <PrimaryButton title="Back" onPress={() => navigation.goBack()} />
       </SafeAreaView>
     );
   }
 
   if (!event) {
     return (
-      <SafeAreaView style={{ padding: 16 }}>
+      <SafeAreaView style={{ padding: 16, gap: 12 }}>
         <Text>Event not found.</Text>
+        <PrimaryButton title="Back" onPress={() => navigation.goBack()} />
       </SafeAreaView>
     );
   }
@@ -48,6 +50,8 @@ export function StudentEventDetailsScreen({ route, navigation }) {
         title="View Attendees"
         onPress={() => navigation.navigate("Attendees", { eventId: event.id })}
       />
+
+      <PrimaryButton title="Back" onPress={() => navigation.goBack()} />
     </SafeAreaView>
   );
 }

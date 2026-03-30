@@ -1,6 +1,7 @@
 import React from "react";
 import { SafeAreaView, Text, View } from "react-native";
 import { PrimaryButton } from "../../components/PrimaryButton";
+import { logout } from "../../utils/logout";
 
 export function AdminHomeScreen({ navigation }) {
   return (
@@ -11,6 +12,10 @@ export function AdminHomeScreen({ navigation }) {
         <PrimaryButton title="Manage Events" onPress={() => navigation.navigate("ManageEvents")} />
         <PrimaryButton title="Attendance Records" onPress={() => navigation.navigate("ManageAttendance")} />
         <PrimaryButton title="Reports (CSV)" onPress={() => navigation.navigate("AdminReports")} />
+      </View>
+
+      <View style={{ marginTop: 14 }}>
+        <PrimaryButton title="Logout" onPress={() => logout(navigation)} />
       </View>
     </SafeAreaView>
   );

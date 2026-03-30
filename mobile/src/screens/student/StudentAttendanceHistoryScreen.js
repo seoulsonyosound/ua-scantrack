@@ -3,8 +3,9 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, SafeAreaView, Text, View } from "react-native";
 import { getMyAttendance } from "../../api/auth";
 import { session } from "../../session";
+import { PrimaryButton } from "../../components/PrimaryButton";
 
-export function StudentAttendanceHistoryScreen() {
+export function StudentAttendanceHistoryScreen({ navigation }) {
   const [busy, setBusy] = useState(true);
   const [records, setRecords] = useState([]);
 
@@ -26,7 +27,16 @@ export function StudentAttendanceHistoryScreen() {
 
       <View style={{ gap: 10 }}>
         {records.map((r) => (
-          <View key={r.id} style={{ borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 12, padding: 12, gap: 4 }}>
+          <View
+            key={r.id}
+            style={{
+              borderWidth: 1,
+              borderColor: "#e5e7eb",
+              borderRadius: 12,
+              padding: 12,
+              gap: 4,
+            }}
+          >
             <Text style={{ fontWeight: "900" }}>{r.event}</Text>
             <Text>Status: {r.status}</Text>
             <Text style={{ color: "#6b7280" }}>{r.time_in}</Text>
@@ -34,6 +44,8 @@ export function StudentAttendanceHistoryScreen() {
         ))}
         {!busy && records.length === 0 ? <Text>No attendance records yet.</Text> : null}
       </View>
+
+      <PrimaryButton title="Back" onPress={() => navigation.goBack()} />
     </SafeAreaView>
   );
 }

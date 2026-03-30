@@ -9,34 +9,54 @@ import csv
 from .models import Student, Event, Attendance
 from .serializers import StudentSerializer, EventSerializer, AttendanceSerializer
 from rest_framework.permissions import BasePermission
-from django.utils import timezone
 from rest_framework.permissions import AllowAny
 
+# ✅ Added: CSV renderer to prevent 406 Not Acceptable (content negotiation)
+from rest_framework.renderers import BaseRenderer
+
+
 ADMIN_PASSCODE = "1234"  # demo passcode; you can move to settings/env later
+
+
+class CSVRenderer(BaseRenderer):
+    media_type = "text/csv"
+    format = "csv"
+    charset = "utf-8"
+
+    # Normally DRF uses this to render Response() bodies. We return HttpResponse for CSV,
+    # but including this renderer prevents DRF from rejecting requests with 406.
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        if data is None:
+            return ""
+        if isinstance(data, (bytes, bytearray)):
+            return data
+        return str(data)
+
 
 class IsAdminPasscode(BasePermission):
     def has_permission(self, request, view):
         return request.headers.get("X-ADMIN-PASSCODE") == ADMIN_PASSCODE
 
+
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all().order_by("last_name")
     serializer_class = StudentSerializer
+
 
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all().order_by("-event_date", "-start_time")
     serializer_class = EventSerializer
 
-    # inside class EventViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
-    # Allow Student Admin PIN validation + upcoming events without admin passcode
+        # Allow Student Admin PIN validation + upcoming events without admin passcode
         if self.action in ("validate_pin", "upcoming"):
             return [AllowAny()]
 
-    # Allow anyone to view events (demo)
+        # Allow anyone to view events (demo)
         if self.request.method in ("GET",):
             return [AllowAny()]
 
-    # Everything else requires admin passcode
+        # Everything else requires admin passcode
         return [IsAdminPasscode()]
 
     @action(detail=False, methods=["get"])
@@ -44,7 +64,7 @@ class EventViewSet(viewsets.ModelViewSet):
         today = timezone.localdate()
         qs = Event.objects.filter(event_date__gte=today).order_by("event_date", "start_time")
         return Response(EventSerializer(qs, many=True).data)
-    
+
     @action(detail=False, methods=["post"])
     def validate_pin(self, request):
         pin_code = request.data.get("pin_code")
@@ -58,7 +78,8 @@ class EventViewSet(viewsets.ModelViewSet):
 
         return Response(EventSerializer(event).data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["get"])
+    # ✅ Added renderer_classes=[CSVRenderer] to stop 406 Not Acceptable
+    @action(detail=True, methods=["get"], renderer_classes=[CSVRenderer])
     def report_csv(self, request, pk=None):
         """
         Admin report:
@@ -113,7 +134,8 @@ class EventViewSet(viewsets.ModelViewSet):
 
         return resp
 
-    @action(detail=True, methods=["get"])
+    # ✅ Added renderer_classes=[CSVRenderer] to stop 406 Not Acceptable
+    @action(detail=True, methods=["get"], renderer_classes=[CSVRenderer])
     def attendees_csv(self, request, pk=None):
         """
         Admin attendees list (checked-in students only):
@@ -167,6 +189,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
         return resp
 
+
 class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.select_related("student", "event").all()
     serializer_class = AttendanceSerializer
@@ -190,7 +213,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"])
     def scan_checkin(self, request):
-        # (keep your existing scan_checkin code unchanged)
         pin = request.data.get("pin_code")
         student_no = request.data.get("student_no")
 

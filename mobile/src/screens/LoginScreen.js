@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Alert, SafeAreaView, Text, TextInput, View } from "react-native";
+import { SafeAreaView, Text, TextInput, View } from "react-native";
 
 import { PrimaryButton } from "../components/PrimaryButton";
 import { login } from "../api/auth";
@@ -9,9 +9,11 @@ export function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("student@ua.edu");
   const [password, setPassword] = useState("student123");
   const [busy, setBusy] = useState(false);
+  const [loginError, setLoginError] = useState("");
 
   async function onLogin() {
     setBusy(true);
+    setLoginError("");
     try {
       const user = await login(email.trim(), password);
       session.user = user;
@@ -19,14 +21,17 @@ export function LoginScreen({ navigation }) {
       if (user.role === "ADMIN") {
         navigation.reset({ index: 0, routes: [{ name: "AdminHome" }] });
       } else {
+        // keep your existing behavior; no StudentHome changes here
         navigation.reset({ index: 0, routes: [{ name: "StudentHome" }] });
       }
     } catch (e) {
-      Alert.alert("Login failed", e?.response?.data?.detail ?? "Invalid credentials.");
+      setLoginError(e?.response?.data?.detail ?? "Invalid credentials.");
     } finally {
       setBusy(false);
     }
   }
+
+  const inputBorder = loginError ? "#ef4444" : "#d1d5db";
 
   return (
     <SafeAreaView style={{ padding: 16, gap: 12 }}>
@@ -37,8 +42,11 @@ export function LoginScreen({ navigation }) {
         <TextInput
           autoCapitalize="none"
           value={email}
-          onChangeText={setEmail}
-          style={{ borderWidth: 1, borderColor: "#d1d5db", padding: 12, borderRadius: 10 }}
+          onChangeText={(v) => {
+            setEmail(v);
+            if (loginError) setLoginError("");
+          }}
+          style={{ borderWidth: 1, borderColor: inputBorder, padding: 12, borderRadius: 10 }}
         />
       </View>
 
@@ -46,29 +54,24 @@ export function LoginScreen({ navigation }) {
         <Text>Password</Text>
         <TextInput
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(v) => {
+            setPassword(v);
+            if (loginError) setLoginError("");
+          }}
           secureTextEntry
-          style={{ borderWidth: 1, borderColor: "#d1d5db", padding: 12, borderRadius: 10 }}
+          style={{ borderWidth: 1, borderColor: inputBorder, padding: 12, borderRadius: 10 }}
         />
       </View>
 
-      <PrimaryButton
-        title={busy ? "Signing in..." : "Login"}
-        onPress={onLogin}
-        disabled={busy}
-      />
+      {loginError ? <Text style={{ color: "#ef4444" }}>{loginError}</Text> : null}
+
+      <PrimaryButton title={busy ? "Signing in..." : "Login"} onPress={onLogin} disabled={busy} />
 
       <PrimaryButton
         title="Student Admin (Scan via PIN)"
         onPress={() => navigation.navigate("PinLogin")}
         disabled={busy}
       />
-
-      <Text style={{ color: "#6b7280" }}>
-        Seed demo accounts:
-        {"\n"}- admin@ua.edu / admin123
-        {"\n"}- student@ua.edu / student123
-      </Text>
     </SafeAreaView>
   );
 }

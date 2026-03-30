@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, SafeAreaView, Text, View } from "react-native";
 import { listAttendance } from "../../api/attendance";
+import { PrimaryButton } from "../../components/PrimaryButton";
 
-export function AttendeesScreen({ route }) {
+export function AttendeesScreen({ route, navigation }) {
   const { eventId } = route.params;
   const [busy, setBusy] = useState(true);
   const [records, setRecords] = useState([]);
@@ -25,11 +26,12 @@ export function AttendeesScreen({ route }) {
   }, [records, eventId]);
 
   return (
-    <SafeAreaView style={{ padding: 16 }}>
+    <SafeAreaView style={{ padding: 16, gap: 12 }}>
       {busy ? <ActivityIndicator /> : null}
 
       <View style={{ gap: 10 }}>
         <Text style={{ fontSize: 16, fontWeight: "800" }}>Attendees ({attendees.length})</Text>
+
         {attendees.map((s) => (
           <View
             key={s.id}
@@ -45,6 +47,8 @@ export function AttendeesScreen({ route }) {
           </View>
         ))}
       </View>
+
+      <PrimaryButton title="Back" onPress={() => navigation.goBack()} />
     </SafeAreaView>
   );
 }
