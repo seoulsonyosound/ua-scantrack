@@ -11,7 +11,7 @@ import { SummaryScreen } from "../screens/studentAdmin/SummaryScreen";
 // Student
 import { StudentHomeScreen } from "../screens/student/StudentHomeScreen";
 import { EventsListScreen } from "../screens/student/EventsListScreen";
-import { EventDetailsScreen } from "../screens/student/EventDetailsScreen";
+import { StudentEventDetailsScreen } from "../screens/student/StudentEventDetailsScreen";
 import { AttendeesScreen } from "../screens/student/AttendeesScreen";
 import { StudentProfileScreen } from "../screens/student/StudentProfileScreen";
 import { StudentAttendanceHistoryScreen } from "../screens/student/StudentAttendanceHistoryScreen";
@@ -20,6 +20,7 @@ import { StudentAttendanceHistoryScreen } from "../screens/student/StudentAttend
 import { AdminHomeScreen } from "../screens/admin/AdminHomeScreen";
 import { ManageEventsScreen } from "../screens/admin/ManageEventsScreen";
 import { CreateEventScreen } from "../screens/admin/CreateEventScreen";
+import { AdminEventDetailsScreen } from "../screens/admin/AdminEventDetailsScreen";
 import { ManageAttendanceScreen } from "../screens/admin/ManageAttendanceScreen";
 import { AdminReportsScreen } from "../screens/admin/AdminReportsScreen";
 
@@ -39,7 +40,7 @@ export function AppNavigator() {
       {/* Student */}
       <Stack.Screen name="StudentHome" component={StudentHomeScreen} options={{ title: "Student" }} />
       <Stack.Screen name="StudentEvents" component={EventsListScreen} options={{ title: "Upcoming Events" }} />
-      <Stack.Screen name="EventDetails" component={EventDetailsScreen} options={{ title: "Event Details" }} />
+      <Stack.Screen name="StudentEventDetails" component={StudentEventDetailsScreen} options={{ title: "Event Details" }} />
       <Stack.Screen name="Attendees" component={AttendeesScreen} options={{ title: "Attendees" }} />
       <Stack.Screen name="StudentProfile" component={StudentProfileScreen} options={{ title: "My Profile" }} />
       <Stack.Screen
@@ -52,6 +53,7 @@ export function AppNavigator() {
       <Stack.Screen name="AdminHome" component={AdminHomeScreen} options={{ title: "Admin" }} />
       <Stack.Screen name="ManageEvents" component={ManageEventsScreen} options={{ title: "Manage Events" }} />
       <Stack.Screen name="CreateEvent" component={CreateEventScreen} options={{ title: "Create Event" }} />
+      <Stack.Screen name="AdminEventDetails" component={AdminEventDetailsScreen} options={{ title: "Event Details (Admin)" }} />
       <Stack.Screen name="ManageAttendance" component={ManageAttendanceScreen} options={{ title: "Attendance Records" }} />
       <Stack.Screen name="AdminReports" component={AdminReportsScreen} options={{ title: "Reports" }} />
     </Stack.Navigator>

@@ -25,7 +25,7 @@ export function EventsListScreen({ navigation }) {
         {events.map((ev) => (
           <Pressable
             key={ev.id}
-            onPress={() => navigation.navigate("EventDetails", { eventId: ev.id })}
+            onPress={() => navigation.navigate("StudentEventDetails", { eventId: ev.id })}
             style={{
               borderWidth: 1,
               borderColor: "#e5e7eb",

@@ -3,7 +3,7 @@ import { ActivityIndicator, SafeAreaView, Text, View } from "react-native";
 import { getEvent } from "../../api/events";
 import { PrimaryButton } from "../../components/PrimaryButton";
 
-export function EventDetailsScreen({ route, navigation }) {
+export function StudentEventDetailsScreen({ route, navigation }) {
   const { eventId } = route.params;
   const [event, setEvent] = useState(null);
   const [busy, setBusy] = useState(true);

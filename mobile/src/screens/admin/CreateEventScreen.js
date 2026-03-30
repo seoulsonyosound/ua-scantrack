@@ -3,6 +3,10 @@ import { Alert, SafeAreaView, Text, TextInput, View } from "react-native";
 import { createEvent } from "../../api/events";
 import { PrimaryButton } from "../../components/PrimaryButton";
 
+function generatePin4() {
+  return String(Math.floor(1000 + Math.random() * 9000)); // 1000-9999
+}
+
 export function CreateEventScreen({ navigation, route }) {
   const onDone = route?.params?.onDone;
 
@@ -13,6 +17,7 @@ export function CreateEventScreen({ navigation, route }) {
     start_time: "08:00:00",
     end_time: "10:00:00",
     venue: "",
+    // don't store pin_code here; generate on Create
   });
 
   const [busy, setBusy] = useState(false);
@@ -22,18 +27,24 @@ export function CreateEventScreen({ navigation, route }) {
   }
 
   async function onCreate() {
-    setBusy(true);
-    try {
-      const created = await createEvent(form);
-      Alert.alert("Created", `Event created.\nPIN: ${created.pin_code}`);
-      if (typeof onDone === "function") onDone();
-      navigation.goBack();
-    } catch (e) {
-      Alert.alert("Create failed", e?.response?.data?.detail ?? "Failed.");
-    } finally {
-      setBusy(false);
-    }
+  setBusy(true);
+  try {
+    const pin_code = generatePin4();
+    const created = await createEvent({ ...form, pin_code });
+
+    if (typeof onDone === "function") onDone();
+
+    navigation.navigate("AdminEventDetails", { event: created });
+  } catch (e) {
+    const msg =
+      e?.response?.data
+        ? JSON.stringify(e.response.data, null, 2)
+        : (e?.message ?? "Failed.");
+    Alert.alert("Create failed", msg);
+  } finally {
+    setBusy(false);
   }
+}
 
   return (
     <SafeAreaView style={{ padding: 16, gap: 12 }}>

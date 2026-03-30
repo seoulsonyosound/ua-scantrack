@@ -1,4 +1,5 @@
 from pathlib import Path
+from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -29,7 +30,20 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# DEV: allow all origins
 CORS_ALLOW_ALL_ORIGINS = True
+
+# IMPORTANT: allow custom headers used by your app
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-admin-passcode",
+]
+
+# (Optional) If you want to restrict origins later, use ONLY this and set ALLOW_ALL to False.
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8081",
+    "http://127.0.0.1:8081",
+    "http://192.168.100.153:8081",
+]
 
 ROOT_URLCONF = "backend.urls"
 

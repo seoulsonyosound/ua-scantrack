@@ -1,11 +1,6 @@
 import { api } from "./client";
 import { session } from "../session";
 
-export async function validateEventPin(pin_code) {
-  const res = await api.post("/events/validate_pin/", { pin_code });
-  return res.data;
-}
-
 export async function listEvents() {
   const res = await api.get("/events/");
   return res.data;
@@ -20,6 +15,11 @@ export async function createEvent(payload) {
   const res = await api.post("/events/", payload, {
     headers: { "X-ADMIN-PASSCODE": session.adminPasscode },
   });
+  return res.data;
+}
+
+export async function validateEventPin(pin_code) {
+  const res = await api.post("/events/validate_pin/", { pin_code });
   return res.data;
 }
 

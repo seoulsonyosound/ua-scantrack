@@ -28,10 +28,15 @@ class EventViewSet(viewsets.ModelViewSet):
 
     # inside class EventViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
-        # Allow anyone to view events (demo)
+    # Allow Student Admin PIN validation + upcoming events without admin passcode
+        if self.action in ("validate_pin", "upcoming"):
+            return [AllowAny()]
+
+    # Allow anyone to view events (demo)
         if self.request.method in ("GET",):
             return [AllowAny()]
-        # Non-GET requires admin passcode
+
+    # Everything else requires admin passcode
         return [IsAdminPasscode()]
 
     @action(detail=False, methods=["get"])
@@ -39,6 +44,19 @@ class EventViewSet(viewsets.ModelViewSet):
         today = timezone.localdate()
         qs = Event.objects.filter(event_date__gte=today).order_by("event_date", "start_time")
         return Response(EventSerializer(qs, many=True).data)
+    
+    @action(detail=False, methods=["post"])
+    def validate_pin(self, request):
+        pin_code = request.data.get("pin_code")
+        if not pin_code:
+            return Response({"pin_code": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            event = Event.objects.get(pin_code=pin_code, pin_enabled=True)
+        except Event.DoesNotExist:
+            return Response({"detail": "Invalid PIN"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(EventSerializer(event).data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["get"])
     def report_csv(self, request, pk=None):
