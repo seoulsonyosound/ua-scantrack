@@ -1,9 +1,12 @@
-import React, { useState } from "react";
-import { SafeAreaView, Text, TextInput, View } from "react-native";
-
-import { PrimaryButton } from "../components/PrimaryButton";
+import React, { useState, useRef, useEffect } from "react";
+import { 
+  SafeAreaView, Text, TextInput, View, KeyboardAvoidingView, 
+  Platform, Pressable, Animated, Easing 
+} from "react-native";
 import { login } from "../api/auth";
 import { session } from "../session";
+import styles, { COLORS } from "../styles/styles";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("student@ua.edu");
@@ -11,67 +14,227 @@ export function LoginScreen({ navigation }) {
   const [busy, setBusy] = useState(false);
   const [loginError, setLoginError] = useState("");
 
-  async function onLogin() {
-    setBusy(true);
-    setLoginError("");
-    try {
-      const user = await login(email.trim(), password);
-      session.user = user;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const shapeRotation = useRef(new Animated.Value(0)).current;
+  const bounceAnim = useRef(new Animated.Value(0)).current;
 
-      if (user.role === "ADMIN") {
-        navigation.reset({ index: 0, routes: [{ name: "AdminHome" }] });
-      } else {
-        // keep your existing behavior; no StudentHome changes here
-        navigation.reset({ index: 0, routes: [{ name: "StudentHome" }] });
-      }
-    } catch (e) {
-      setLoginError(e?.response?.data?.detail ?? "Invalid credentials.");
-    } finally {
-      setBusy(false);
-    }
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+      Animated.loop(
+        Animated.timing(shapeRotation, { toValue: 1, duration: 25000, easing: Easing.linear, useNativeDriver: true })
+      ),
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(bounceAnim, { toValue: 1, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(bounceAnim, { toValue: 0, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true })
+        ])
+      )
+    ]).start();
+  }, []);
+
+  const spin = shapeRotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg']
+  });
+
+  const float = bounceAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -30]
+  });
+
+ async function onLogin() {
+  setBusy(true);
+  setLoginError("");
+  try {
+    const response = await login(email.trim(), password);
+    console.log("LOGIN RESPONSE:", response); // debug
+
+    // Save the token (only after successful login)
+    await AsyncStorage.setItem('userToken', response.token);
+    const check = await AsyncStorage.getItem('userToken');
+    console.log("TOKEN SAVED RIGHT AFTER LOGIN:", check);
+
+    // Save user
+    session.user = response;
+
+    // Navigate based on role
+    navigation.reset({ index: 0, routes: [{ name: response.role === "ADMIN" ? "AdminHome" : "StudentHome" }] });
+  } catch (e) {
+    setLoginError(e?.response?.data?.detail ?? "Invalid credentials.");
+
+    // Clear any old token (security best practice)
+    await AsyncStorage.removeItem('userToken');
+  } finally {
+    setBusy(false);
   }
+}
+  const HoverButton = ({ onPress, title, isPrimary, flex, disabled }) => {
+    const scale = useRef(new Animated.Value(1)).current;
+    
+    const handleHover = (isHovering) => {
+      if (Platform.OS !== 'web') return;
+      Animated.spring(scale, {
+        toValue: isHovering ? 1.02 : 1,
+        friction: 8,
+        useNativeDriver: true,
+      }).start();
+    };
 
-  const inputBorder = loginError ? "#ef4444" : "#d1d5db";
+    return (
+      <Animated.View style={{ flex, transform: [{ scale }] }}>
+        <Pressable
+          onPress={onPress}
+          disabled={disabled}
+          onMouseEnter={() => handleHover(true)}
+          onMouseLeave={() => handleHover(false)}
+          style={({ pressed }) => [
+            {
+              paddingVertical: 22,
+              paddingHorizontal: 10,
+              borderRadius: 22,
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+            isPrimary ? {
+              backgroundColor: pressed ? '#1e293b' : COLORS.navy,
+              elevation: 8,
+              shadowColor: COLORS.navy,
+              shadowOpacity: 0.25,
+              shadowRadius: 15,
+              shadowOffset: { width: 0, height: 8 }
+            } : {
+              backgroundColor: pressed ? '#f8fafc' : 'white',
+              borderWidth: 2,
+              borderColor: '#E2E8F0',
+            }
+          ]}
+        >
+          <Text 
+            numberOfLines={1}
+            style={{ 
+              color: isPrimary ? 'white' : COLORS.navy, 
+              fontWeight: '900', 
+              fontSize: 14, 
+              letterSpacing: 1,
+              textAlign: 'center'
+            }}
+          >
+            {title}
+          </Text>
+        </Pressable>
+      </Animated.View>
+    );
+  };
+
+  
 
   return (
-    <SafeAreaView style={{ padding: 16, gap: 12 }}>
-      <Text style={{ fontSize: 22, fontWeight: "900" }}>Login (Demo)</Text>
-
-      <View style={{ gap: 6 }}>
-        <Text>Email</Text>
-        <TextInput
-          autoCapitalize="none"
-          value={email}
-          onChangeText={(v) => {
-            setEmail(v);
-            if (loginError) setLoginError("");
-          }}
-          style={{ borderWidth: 1, borderColor: inputBorder, padding: 12, borderRadius: 10 }}
-        />
+    <SafeAreaView style={[styles.screen, { backgroundColor: '#F8FAFC' }]}>
+      <View pointerEvents="none" style={{ position: 'absolute', width: '100%', height: '100%' }}>
+        <Animated.View style={{ position: 'absolute', width: 500, height: 500, borderRadius: 250, backgroundColor: COLORS.navy, top: -100, right: -100, transform: [{ rotate: spin }], opacity: 0.12 }} />
+        <Animated.View style={{ position: 'absolute', width: 300, height: 300, borderRadius: 60, backgroundColor: COLORS.orange, bottom: -50, left: -80, transform: [{ rotate: spin }, { translateY: float }], opacity: 0.18 }} />
+        <Animated.View style={{ position: 'absolute', width: 150, height: 150, borderRadius: 75, borderWidth: 15, borderColor: COLORS.navy, top: '40%', left: -50, transform: [{ translateY: float }], opacity: 0.08 }} />
       </View>
 
-      <View style={{ gap: 6 }}>
-        <Text>Password</Text>
-        <TextInput
-          value={password}
-          onChangeText={(v) => {
-            setPassword(v);
-            if (loginError) setLoginError("");
-          }}
-          secureTextEntry
-          style={{ borderWidth: 1, borderColor: inputBorder, padding: 12, borderRadius: 10 }}
-        />
-      </View>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+        <Animated.View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 30, opacity: fadeAnim }}>
+          
+          <View style={{ marginBottom: 50, alignItems: 'center' }}>
+             <View style={{ height: 6, width: 40, backgroundColor: COLORS.orange, borderRadius: 3, marginBottom: 15 }} />
+             <Text style={[styles.kicker, { color: COLORS.navy, letterSpacing: 6, fontSize: 13, fontWeight: '900', opacity: 0.8 }]}>UA SCANTRACK</Text>
+             <Text style={[styles.heroTitle, { fontSize: 64, lineHeight: 70, fontWeight: '900', color: COLORS.navy, textAlign: 'center' }]}>Welcome{"\n"}Back</Text>
+          </View>
 
-      {loginError ? <Text style={{ color: "#ef4444" }}>{loginError}</Text> : null}
+          <View style={{ width: '100%', maxWidth: 420 }}>
+            <StyledInput label="UNIVERSITY EMAIL" value={email} onChange={(v) => { setEmail(v); setLoginError(""); }} placeholder="user@ua.edu" />
+            <StyledInput label="PASSWORD" value={password} onChange={(v) => { setPassword(v); setLoginError(""); }} secure={true} placeholder="••••••••" />
 
-      <PrimaryButton title={busy ? "Signing in..." : "Login"} onPress={onLogin} disabled={busy} />
+            {loginError ? <Text style={{ color: "#ef4444", fontWeight: '800', fontSize: 13, marginBottom: 20, textAlign: 'center' }}>{loginError}</Text> : null}
 
-      <PrimaryButton
-        title="Student Admin (Scan via PIN)"
-        onPress={() => navigation.navigate("PinLogin")}
-        disabled={busy}
-      />
+            <View style={{ flexDirection: 'row', gap: 12, marginTop: 10 }}>
+              <HoverButton 
+                title={busy ? "..." : "LOGIN"} 
+                onPress={onLogin} 
+                isPrimary={true} 
+                flex={1.4} 
+                disabled={busy} 
+              />
+              <HoverButton 
+                title="STUDENT ADMIN" 
+                onPress={() => navigation.navigate("PinLogin")} 
+                isPrimary={false} 
+                flex={1.6} 
+              />
+            </View>
+          </View>
+
+          <View style={{ marginTop: 80 }}>
+             <Text style={{ textAlign: 'center', color: '#94A3B8', fontSize: 11, fontWeight: '900', letterSpacing: 5 }}>UNIVERSITY OF THE ASSUMPTION</Text>
+          </View>
+        </Animated.View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
+
+const StyledInput = ({ label, value, onChange, secure = false, placeholder, loginError }) => {
+  const [isFocused, setIsFocused] = useState(false);
+  return (
+    <View style={{ width: '100%', marginBottom: 18, zIndex: 100 }}>
+      <Text style={{ color: COLORS.navy, fontWeight: '900', fontSize: 10, letterSpacing: 2, marginBottom: 8, textAlign: 'center' }}>{label}</Text>
+      <View style={{ 
+        borderRadius: 20, 
+        backgroundColor: 'white', 
+        borderWidth: 2,
+        borderColor: isFocused ? COLORS.navy : (loginError ? '#ef4444' : '#F1F5F9'),
+      }}>
+        <TextInput
+          placeholder={placeholder}
+          value={value}
+          onChangeText={onChange} // This handles the state update correctly
+          secureTextEntry={secure}
+          textAlign="center"
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          autoCapitalize="none"
+          style={{ 
+            padding: 22, 
+            borderRadius: 20, 
+            fontSize: 16, 
+            color: COLORS.navy, 
+            fontWeight: '600',
+            ...Platform.select({ web: { outlineStyle: 'none', cursor: 'text' } })
+          }}
+        />
+      </View>
+    </View>
+  );
+};
+
+const HoverButton = ({ onPress, title, isPrimary, flex, disabled }) => {
+  const scale = useRef(new Animated.Value(1)).current;
+  const handleHover = (isHovering) => {
+    if (Platform.OS !== 'web') return;
+    Animated.spring(scale, { toValue: isHovering ? 1.02 : 1, friction: 8, useNativeDriver: true }).start();
+  };
+
+  return (
+    <Animated.View style={{ flex, transform: [{ scale }] }}>
+      <Pressable
+        onPress={onPress}
+        disabled={disabled}
+        onMouseEnter={() => handleHover(true)}
+        onMouseLeave={() => handleHover(false)}
+        style={({ pressed }) => [
+          { paddingVertical: 22, paddingHorizontal: 10, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+          isPrimary ? { backgroundColor: pressed ? '#1e293b' : COLORS.navy, elevation: 8 } : { backgroundColor: pressed ? '#f8fafc' : 'white', borderWidth: 2, borderColor: '#E2E8F0' }
+        ]}
+      >
+        <Text numberOfLines={1} style={{ color: isPrimary ? 'white' : COLORS.navy, fontWeight: '900', fontSize: 14, letterSpacing: 1, textAlign: 'center' }}>
+          {title}
+        </Text>
+      </Pressable>
+    </Animated.View>
+  );
+};

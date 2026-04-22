@@ -23,6 +23,9 @@ import { CreateEventScreen } from "../screens/admin/CreateEventScreen";
 import { AdminEventDetailsScreen } from "../screens/admin/AdminEventDetailsScreen";
 import { ManageAttendanceScreen } from "../screens/admin/ManageAttendanceScreen";
 import { AdminReportsScreen } from "../screens/admin/AdminReportsScreen";
+import { EditEventScreen } from "../screens/admin/EditEventScreen";
+import { QuickScanScreen } from "../screens/admin/QuickScanScreen";
+import { ManageStudentScreen } from "../screens/admin/ManageStudentScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -56,6 +59,10 @@ export function AppNavigator() {
       <Stack.Screen name="AdminEventDetails" component={AdminEventDetailsScreen} options={{ title: "Event Details (Admin)" }} />
       <Stack.Screen name="ManageAttendance" component={ManageAttendanceScreen} options={{ title: "Attendance Records" }} />
       <Stack.Screen name="AdminReports" component={AdminReportsScreen} options={{ title: "Reports" }} />
+      <Stack.Screen name="EditEvent" component={EditEventScreen} options={{ title: 'Edit Event' }} />
+      <Stack.Screen name="QuickScan" component={QuickScanScreen} options={{ title: "Quick Scan" }} />
+      <Stack.Screen name="ManageStudents" component={ManageStudentScreen} options={{ title: "Manage Students" }} />
+
     </Stack.Navigator>
   );
 }

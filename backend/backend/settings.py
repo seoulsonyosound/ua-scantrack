@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "dev-only"
 DEBUG = True
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["192.168.254.155", "192.168.100.153", "192.168.100.172", "localhost", "127.0.0.1"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -15,14 +15,16 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework.authtoken", #
     "corsheaders",
     "core",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -36,6 +38,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 # IMPORTANT: allow custom headers used by your app
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "x-admin-passcode",
+
 ]
 
 # (Optional) If you want to restrict origins later, use ONLY this and set ALLOW_ALL to False.
@@ -44,6 +47,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8081",
     "http://192.168.100.153:8081",
     "http://192.168.100.172:8081",
+    "http://192.168.254.155:8081",
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -73,6 +77,7 @@ DATABASES = {
 }
 
 AUTH_PASSWORD_VALIDATORS = []
+
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
@@ -80,3 +85,12 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+AUTH_USER_MODEL = "core.AppUser"

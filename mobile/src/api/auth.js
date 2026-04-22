@@ -7,7 +7,7 @@ export async function login(email, password) {
 }
 
 export async function getStudentMe(email) {
-  const res = await api.get("/students/me/", { params: { email } });
+  const res = await api.get('/students/me/');
   return res.data;
 }
 

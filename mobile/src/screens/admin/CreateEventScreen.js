@@ -1,83 +1,159 @@
-import React, { useState } from "react";
-import { Alert, SafeAreaView, Text, TextInput, View } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { 
+  Alert, SafeAreaView, Text, TextInput, View, ScrollView, 
+  Pressable, ActivityIndicator, Animated, Easing, Platform 
+} from "react-native";
 import { createEvent } from "../../api/events";
-import { PrimaryButton } from "../../components/PrimaryButton";
-
-function generatePin4() {
-  return String(Math.floor(1000 + Math.random() * 9000)); // 1000-9999
-}
+import styles, { COLORS } from "../../styles/styles";
 
 export function CreateEventScreen({ navigation, route }) {
-  const onDone = route?.params?.onDone;
+  const onDone = route.params?.onDone;
+  const [busy, setBusy] = useState(false);
+  const shapeRotation = useRef(new Animated.Value(0)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
 
   const [form, setForm] = useState({
     title: "",
     description: "",
-    event_date: "2026-03-29", // example default; change as needed
-    start_time: "08:00:00",
-    end_time: "10:00:00",
+    event_date: new Date().toISOString().split('T')[0],
+    start_time: "08:00",
+    end_time: "17:00",
     venue: "",
-    // don't store pin_code here; generate on Create
+    pin_code: "", 
+    pin_enabled: true
   });
 
-  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    // Branded Kinetic Background
+    Animated.loop(
+      Animated.timing(shapeRotation, { 
+        toValue: 1, 
+        duration: 30000, 
+        easing: Easing.linear, 
+        useNativeDriver: true 
+      })
+    ).start();
 
-  function setField(k, v) {
-    setForm((f) => ({ ...f, [k]: v }));
-  }
+    // Auto-generate a 4-digit PIN
+    const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
+    setField("pin_code", randomPin);
+  }, []);
+
+  const setField = (name, value) => setForm((prev) => ({ ...prev, [name]: value }));
 
   async function onCreate() {
-  setBusy(true);
-  try {
-    const pin_code = generatePin4();
-    const created = await createEvent({ ...form, pin_code });
-
-    if (typeof onDone === "function") onDone();
-
-    navigation.navigate("AdminEventDetails", { event: created });
-  } catch (e) {
-    const msg =
-      e?.response?.data
-        ? JSON.stringify(e.response.data, null, 2)
-        : (e?.message ?? "Failed.");
-    Alert.alert("Create failed", msg);
-  } finally {
-    setBusy(false);
+    if (!form.title || !form.venue || !form.event_date) {
+      Alert.alert("Required", "Please fill in Title, Venue, and Date.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await createEvent(form);
+      Alert.alert("Success", "Event initialized successfully.");
+      if (onDone) onDone();
+      navigation.goBack();
+    } catch (e) {
+      Alert.alert("Error", "Could not create event. Please check connection.");
+    } finally {
+      setBusy(false);
+    }
   }
-}
+
+  const handleHover = (isHovering) => {
+    if (Platform.OS !== 'web') return;
+    Animated.spring(buttonScale, { toValue: isHovering ? 1.02 : 1, friction: 8, useNativeDriver: true }).start();
+  };
+
+  const spin = shapeRotation.interpolate({ 
+    inputRange: [0, 1], 
+    outputRange: ['0deg', '360deg'] 
+  });
 
   return (
-    <SafeAreaView style={{ padding: 16, gap: 12 }}>
-      <Text style={{ fontSize: 18, fontWeight: "900" }}>New Event</Text>
+    <SafeAreaView style={[styles.screen, { backgroundColor: '#F8FAFC' }]}>
+      {/* Branded Kinetic Background */}
+      <View pointerEvents="none" style={{ position: 'absolute', width: '100%', height: '100%' }}>
+        <Animated.View style={{ 
+          position: 'absolute', width: 500, height: 500, borderRadius: 250, 
+          backgroundColor: COLORS.navy, top: -150, right: -150, 
+          transform: [{ rotate: spin }], opacity: 0.03 
+        }} />
+      </View>
 
-      <Field label="Title" value={form.title} onChangeText={(v) => setField("title", v)} />
-      <Field label="Description" value={form.description} onChangeText={(v) => setField("description", v)} multiline />
-      <Field label="Event date (YYYY-MM-DD)" value={form.event_date} onChangeText={(v) => setField("event_date", v)} />
-      <Field label="Start time (HH:MM:SS)" value={form.start_time} onChangeText={(v) => setField("start_time", v)} />
-      <Field label="End time (HH:MM:SS)" value={form.end_time} onChangeText={(v) => setField("end_time", v)} />
-      <Field label="Venue" value={form.venue} onChangeText={(v) => setField("venue", v)} />
+      <ScrollView contentContainerStyle={{ padding: 24 }}>
+        <View style={styles.headerSection}>
+          <View style={{ height: 4, width: 40, backgroundColor: COLORS.orange, borderRadius: 2, marginBottom: 12 }} />
+          <Text style={[styles.kicker, { letterSpacing: 4 }]}>INITIALIZATION</Text>
+          <Text style={styles.heroTitle}>Create Event</Text>
+        </View>
 
-      <PrimaryButton title={busy ? "Creating..." : "Create"} onPress={onCreate} disabled={busy} />
+        <View style={{ 
+          backgroundColor: 'white', padding: 25, borderRadius: 28, 
+          elevation: 4, marginTop: 20, borderWidth: 1, borderColor: '#F1F5F9' 
+        }}>
+          <Text style={{ color: COLORS.navy, fontSize: 11, fontWeight: '800', marginBottom: 8, letterSpacing: 1 }}>EVENT TITLE</Text>
+          <TextInput 
+            placeholder="e.g. Foundation Day 2026"
+            style={[styles.borderedInput, { borderRadius: 14, marginBottom: 20, padding: 16 }]} 
+            value={form.title} 
+            onChangeText={(v) => setField("title", v)} 
+          />
+
+          <Text style={{ color: COLORS.navy, fontSize: 11, fontWeight: '800', marginBottom: 8, letterSpacing: 1 }}>VENUE</Text>
+          <TextInput 
+            placeholder="e.g. University Gym"
+            style={[styles.borderedInput, { borderRadius: 14, marginBottom: 20, padding: 16 }]} 
+            value={form.venue} 
+            onChangeText={(v) => setField("venue", v)} 
+          />
+
+          <View style={{ flexDirection: 'row', gap: 12, marginBottom: 25 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: COLORS.navy, fontSize: 11, fontWeight: '800', marginBottom: 8 }}>START TIME</Text>
+              <TextInput 
+                style={[styles.borderedInput, { borderRadius: 14, padding: 16 }]} 
+                value={form.start_time} 
+                onChangeText={(v) => setField("start_time", v)} 
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: COLORS.navy, fontSize: 11, fontWeight: '800', marginBottom: 8 }}>END TIME</Text>
+              <TextInput 
+                style={[styles.borderedInput, { borderRadius: 14, padding: 16 }]} 
+                value={form.end_time} 
+                onChangeText={(v) => setField("end_time", v)} 
+              />
+            </View>
+          </View>
+
+          <View style={{ padding: 20, backgroundColor: '#F8FAFC', borderRadius: 20, marginBottom: 30, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderStyle: 'dashed' }}>
+             <Text style={{ fontSize: 10, fontWeight: '800', color: '#94A3B8', letterSpacing: 2 }}>GENERATED PIN CODE</Text>
+             <Text style={{ fontSize: 32, fontWeight: '900', color: COLORS.navy, letterSpacing: 8, marginTop: 5 }}>{form.pin_code}</Text>
+          </View>
+
+          <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+            <Pressable 
+              onMouseEnter={() => handleHover(true)}
+              onMouseLeave={() => handleHover(false)}
+              onPress={onCreate}
+              disabled={busy}
+              style={({ pressed }) => [
+                { 
+                  backgroundColor: COLORS.navy, height: 60, borderRadius: 18, 
+                  justifyContent: 'center', alignItems: 'center', elevation: 6
+                },
+                pressed && { transform: [{ scale: 0.97 }], elevation: 2 }
+              ]}
+            >
+              {busy ? <ActivityIndicator color="white" /> : <Text style={{ color: 'white', fontWeight: '900', letterSpacing: 1.5 }}>INITIALIZE EVENT</Text>}
+            </Pressable>
+          </Animated.View>
+
+          <Pressable onPress={() => navigation.goBack()} style={{ marginTop: 20, alignItems: 'center' }}>
+            <Text style={{ color: '#94A3B8', fontWeight: '700', fontSize: 13 }}>Cancel and Return</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function Field({ label, value, onChangeText, multiline }) {
-  return (
-    <View style={{ gap: 6 }}>
-      <Text style={{ color: "#374151" }}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        multiline={!!multiline}
-        style={{
-          borderWidth: 1,
-          borderColor: "#d1d5db",
-          padding: 12,
-          borderRadius: 10,
-          minHeight: multiline ? 80 : undefined,
-        }}
-      />
-    </View>
   );
 }

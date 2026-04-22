@@ -2,6 +2,8 @@ from django.db import models
 from django.utils import timezone
 import random
 
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+
 class Student(models.Model):
     student_no = models.CharField(max_length=50, unique=True)  # barcode value
     first_name = models.CharField(max_length=80)
@@ -47,17 +49,37 @@ class Attendance(models.Model):
     def __str__(self):
         return f"{self.student.student_no} @ {self.event.title}"
     
-class AppUser(models.Model):
+class AppUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("Email required")
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('role', AppUser.ROLE_ADMIN)  # Optional, for clarity
+        return self.create_user(email, password, **extra_fields)
+
+class AppUser(AbstractBaseUser, PermissionsMixin):
     ROLE_ADMIN = "ADMIN"
     ROLE_STUDENT = "STUDENT"
     ROLE_CHOICES = [(ROLE_ADMIN, "Admin"), (ROLE_STUDENT, "Student")]
 
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128)  # DEMO: plain text (do not use in production)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
-
-    # link a student account to a Student row (only for STUDENT role)
     student = models.OneToOneField("Student", null=True, blank=True, on_delete=models.SET_NULL)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = AppUserManager()
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["role"]
 
     def __str__(self):
         return f"{self.email} ({self.role})"

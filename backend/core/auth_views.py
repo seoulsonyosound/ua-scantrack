@@ -4,31 +4,34 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import AppUser, Attendance
 from .serializers import StudentSerializer, AttendanceSerializer
+from django.contrib.auth import get_user_model
+from rest_framework.authtoken.models import Token
+User = get_user_model()
 
 class LoginView(APIView):
-    """
-    Demo login:
-    POST /api/auth/login/
-    { "email": "...", "password": "..." }
-    """
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
+
         if not email or not password:
-            return Response({"detail": "email and password required"}, status=400)
+            return Response({"detail": "Email and password required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = AppUser.objects.get(email=email, password=password)
-        except AppUser.DoesNotExist:
-            return Response({"detail": "Invalid credentials"}, status=400)
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        data = {
+        if not user.check_password(password):
+            return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            "token": token.key,  # <--- This line is absolutely required!
             "id": user.id,
             "email": user.email,
-            "role": user.role,
-            "student_id": user.student_id,
-        }
-        return Response(data)
+            "role": getattr(user, "role", None),
+            "student_id": getattr(user, "student_id", None)
+        })
 
 class StudentMeView(APIView):
     """

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Student, Event, Attendance
+from .models import Student, Event, Attendance, AppUser
+
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
@@ -17,3 +18,9 @@ class AttendanceAdmin(admin.ModelAdmin):
     list_display = ("event", "student", "status", "time_in", "time_out")
     search_fields = ("student__student_no", "student__last_name", "event__title")
     list_filter = ("status", "event")
+    
+@admin.register(AppUser)
+class AppUserAdmin(admin.ModelAdmin):
+    list_display = ("email", "role", "student", "is_staff", "is_superuser", "is_active")
+    search_fields = ("email", "role")
+    list_filter = ("role", "is_staff", "is_superuser", "is_active")

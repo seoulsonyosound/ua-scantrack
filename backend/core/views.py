@@ -5,11 +5,15 @@ from django.utils import timezone
 from django.db import IntegrityError
 from django.http import HttpResponse
 import csv
+from rest_framework.views import APIView
+
 
 from .models import Student, Event, Attendance
 from .serializers import StudentSerializer, EventSerializer, AttendanceSerializer
 from rest_framework.permissions import BasePermission
 from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
+from .models import Student
 
 # ✅ Added: CSV renderer to prevent 406 Not Acceptable (content negotiation)
 from rest_framework.renderers import BaseRenderer
@@ -35,6 +39,7 @@ class CSVRenderer(BaseRenderer):
 
 class IsAdminPasscode(BasePermission):
     def has_permission(self, request, view):
+        print("X-ADMIN-PASSCODE HEADER:", request.headers.get("X-ADMIN-PASSCODE")) 
         return request.headers.get("X-ADMIN-PASSCODE") == ADMIN_PASSCODE
 
 
@@ -49,7 +54,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         # Allow Student Admin PIN validation + upcoming events without admin passcode
-        if self.action in ("validate_pin", "upcoming"):
+        if self.action in ("validate_pin", "upcoming", "destroy"):
             return [AllowAny()]
 
         # Allow anyone to view events (demo)
@@ -58,6 +63,8 @@ class EventViewSet(viewsets.ModelViewSet):
 
         # Everything else requires admin passcode
         return [IsAdminPasscode()]
+    
+    
 
     @action(detail=False, methods=["get"])
     def upcoming(self, request):
@@ -77,6 +84,7 @@ class EventViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Invalid PIN"}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(EventSerializer(event).data, status=status.HTTP_200_OK)
+    
 
     # ✅ Added renderer_classes=[CSVRenderer] to stop 406 Not Acceptable
     @action(detail=True, methods=["get"], renderer_classes=[CSVRenderer])
@@ -242,3 +250,14 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Already checked-in"}, status=409)
 
         return Response(AttendanceSerializer(att).data, status=status.HTTP_201_CREATED)
+    
+class StudentMeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        print("StudentMeView CALLED!")
+        app_user = request.user
+        if not hasattr(app_user, 'student') or app_user.student is None:
+            return Response({'detail': 'No student profile found.'}, status=404)
+        serializer = StudentSerializer(app_user.student)
+        return Response(serializer.data)
