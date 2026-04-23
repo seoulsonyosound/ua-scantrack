@@ -48,27 +48,48 @@ export function LoginScreen({ navigation }) {
   setLoginError("");
   try {
     const response = await login(email.trim(), password);
-    console.log("LOGIN RESPONSE:", response); // debug
+    console.log("LOGIN SUCCESSFUL:", response);
 
-    // Save the token (only after successful login)
-    await AsyncStorage.setItem('userToken', response.token);
-    const check = await AsyncStorage.getItem('userToken');
-    console.log("TOKEN SAVED RIGHT AFTER LOGIN:", check);
+    session.token = response.token; 
+      session.user = {
+        email: response.email,
+        role: response.role,
+        student_id: response.student_id
+      };
 
-    // Save user
-    session.user = response;
+    // 1. Save to PERSISTENT storage (for when the app restarts)
+    if (response.token) {
+      await AsyncStorage.setItem('userToken', response.token);
+    }
 
-    // Navigate based on role
-    navigation.reset({ index: 0, routes: [{ name: response.role === "ADMIN" ? "AdminHome" : "StudentHome" }] });
+    // 2. Save to MEMORY (the session object)
+    // This is the most important part for fixing your 401/403 errors!
+    session.token = response.token; 
+    session.user = {
+      email: response.email,
+      role: response.role,
+      student_id: response.student_id
+    };
+
+    // 3. Navigate based on role
+    navigation.reset({ 
+      index: 0, 
+      routes: [{ name: response.role === "ADMIN" ? "AdminHome" : "StudentHome" }] 
+    });
+
   } catch (e) {
-    setLoginError(e?.response?.data?.detail ?? "Invalid credentials.");
+    // Check if the server sent a specific error message
+    const errorMsg = e?.response?.data?.detail || "Invalid email or password.";
+    setLoginError(errorMsg);
 
-    // Clear any old token (security best practice)
+    // Security: Clear old tokens on failure
+    session.token = null;
     await AsyncStorage.removeItem('userToken');
   } finally {
     setBusy(false);
   }
 }
+
   const HoverButton = ({ onPress, title, isPrimary, flex, disabled }) => {
     const scale = useRef(new Animated.Value(1)).current;
     

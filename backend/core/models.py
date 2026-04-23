@@ -1,11 +1,10 @@
 from django.db import models
 from django.utils import timezone
 import random
-
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
 class Student(models.Model):
-    student_no = models.CharField(max_length=50, unique=True)  # barcode value
+    student_no = models.CharField(max_length=50, unique=True)
     first_name = models.CharField(max_length=80)
     last_name = models.CharField(max_length=80)
     course = models.CharField(max_length=80)
@@ -21,10 +20,12 @@ class Event(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     venue = models.CharField(max_length=120)
-    pin_code = models.CharField(max_length=4, db_index=True)
+    # FIX: Added blank=True so the serializer doesn't require you to type a PIN in Postman
+    pin_code = models.CharField(max_length=4, db_index=True, blank=True) 
     pin_enabled = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
+        # Auto-generate a 4-digit PIN if one wasn't provided
         if not self.pin_code:
             self.pin_code = f"{random.randint(0, 9999):04d}"
         super().save(*args, **kwargs)
@@ -62,7 +63,7 @@ class AppUserManager(BaseUserManager):
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('role', AppUser.ROLE_ADMIN)  # Optional, for clarity
+        extra_fields.setdefault('role', AppUser.ROLE_ADMIN)
         return self.create_user(email, password, **extra_fields)
 
 class AppUser(AbstractBaseUser, PermissionsMixin):

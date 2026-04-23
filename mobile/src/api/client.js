@@ -7,37 +7,21 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  try {
-    let token = await AsyncStorage.getItem('userToken');
-    console.log("TOKEN SAVED RIGHT AFTER LOGIN:", token);
-    if (!token && typeof window !== "undefined" && window.localStorage) {
-      token = window.localStorage.getItem('userToken');
-    }
-    if (token) {
-      config.headers.Authorization = `Token ${token}`;
-    }
-    // Add passcode header for admin events (PATCH, POST, PUT, DELETE)
-    if (
-      config.url &&
-      config.url.includes("/events/") && // <-- this matches "/events/41/" correctly!
-      config.method && config.method.toLowerCase() !== "get"
-    ) {
-      config.headers["X-ADMIN-PASSCODE"] = session.adminPasscode;
-    }
-    // Log headers and info
-    console.log(
-      "[UPDATE EVENT] SENDING HEADERS:",
-      config.headers,
-      "URL:",
-      config.url,
-      "METHOD:",
-      config.method
-    );
-    return config;
-  } catch (e) {
-    console.error("Token Load Error", e);
-    return config;
+  // Try memory first (fast), then storage (backup)
+  const token = session.token || await AsyncStorage.getItem('userToken');
+  
+  if (token) {
+    config.headers.Authorization = `Token ${token}`;
   }
-}, (error) => {
-  return Promise.reject(error);
-});
+
+  // Handle Admin Passcode for non-GET requests to /events/
+  if (
+  config.url?.includes("/events/") && 
+  config.method?.toLowerCase() !== "get"
+) {
+  // Ensure this value is NOT undefined. It should be "1234"
+  config.headers["X-ADMIN-PASSCODE"] = session.adminPasscode || "1234"; 
+}
+
+  return config;
+}, (error) => Promise.reject(error));

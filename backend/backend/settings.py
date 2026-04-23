@@ -38,7 +38,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 # IMPORTANT: allow custom headers used by your app
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "x-admin-passcode",
-
 ]
 
 # (Optional) If you want to restrict origins later, use ONLY this and set ALLOW_ALL to False.
@@ -94,3 +93,13 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 AUTH_USER_MODEL = "core.AppUser"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}

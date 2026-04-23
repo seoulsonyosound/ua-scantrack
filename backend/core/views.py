@@ -6,6 +6,10 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 import csv
 from rest_framework.views import APIView
+from django.contrib.auth import get_user_model
+from rest_framework.authtoken.models import Token
+User = get_user_model()
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 
 
 from .models import Student, Event, Attendance
@@ -13,7 +17,7 @@ from .serializers import StudentSerializer, EventSerializer, AttendanceSerialize
 from rest_framework.permissions import BasePermission
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
-from .models import Student
+
 
 # ✅ Added: CSV renderer to prevent 406 Not Acceptable (content negotiation)
 from rest_framework.renderers import BaseRenderer
@@ -39,8 +43,13 @@ class CSVRenderer(BaseRenderer):
 
 class IsAdminPasscode(BasePermission):
     def has_permission(self, request, view):
-        print("X-ADMIN-PASSCODE HEADER:", request.headers.get("X-ADMIN-PASSCODE")) 
-        return request.headers.get("X-ADMIN-PASSCODE") == ADMIN_PASSCODE
+        if request.method == 'GET':
+            return True
+        
+        # This handles both X-Admin-Passcode and X-ADMIN-PASSCODE
+        passcode = request.headers.get('X-Admin-Passcode') or request.META.get('HTTP_X_ADMIN_PASSCODE')
+        
+        return passcode == ADMIN_PASSCODE
 
 
 class StudentViewSet(viewsets.ModelViewSet):
@@ -49,19 +58,18 @@ class StudentViewSet(viewsets.ModelViewSet):
 
 
 class EventViewSet(viewsets.ModelViewSet):
-    queryset = Event.objects.all().order_by("-event_date", "-start_time")
+    queryset = Event.objects.all().order_by('-event_date')
     serializer_class = EventSerializer
+    
+    # Force TokenAuthentication ONLY. 
+    # This removes the hidden CSRF requirement that causes the 403.
+    authentication_classes = [TokenAuthentication]
 
     def get_permissions(self):
-        # Allow Student Admin PIN validation + upcoming events without admin passcode
-        if self.action in ("validate_pin", "upcoming", "destroy"):
+        if self.action in ['list', 'retrieve', 'validate_pin']:
             return [AllowAny()]
-
-        # Allow anyone to view events (demo)
-        if self.request.method in ("GET",):
-            return [AllowAny()]
-
-        # Everything else requires admin passcode
+        
+        # For create, update, delete
         return [IsAdminPasscode()]
     
     
