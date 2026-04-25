@@ -12,7 +12,7 @@ export function QuickScanScreen({ navigation }) {
   const shapeRotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Branded Kinetic Background
+
     Animated.loop(
       Animated.timing(shapeRotation, { 
         toValue: 1, 
@@ -41,14 +41,14 @@ export function QuickScanScreen({ navigation }) {
     outputRange: ['0deg', '360deg'] 
   });
 
-  // Animated Card Component for Sleek Hover & Press
+  
   const QuickScanCard = ({ item, index }) => {
     const scale = useRef(new Animated.Value(1)).current;
     const translateY = useRef(new Animated.Value(20)).current;
     const opacity = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-      // Staggered entry animation
+     
       Animated.parallel([
         Animated.timing(opacity, { toValue: 1, duration: 400, delay: index * 100, useNativeDriver: true }),
         Animated.spring(translateY, { toValue: 0, tension: 50, delay: index * 100, useNativeDriver: true })
@@ -93,7 +93,7 @@ export function QuickScanScreen({ navigation }) {
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: '#F8FAFC' }]}>
-      {/* Branded Kinetic Background Orb */}
+     
       <View pointerEvents="none" style={{ position: 'absolute', width: '100%', height: '100%' }}>
         <Animated.View style={{ 
           position: 'absolute', width: 600, height: 600, borderRadius: 300, 

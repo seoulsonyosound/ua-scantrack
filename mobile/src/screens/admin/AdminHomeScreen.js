@@ -75,7 +75,7 @@ export function AdminHomeScreen({ navigation }) {
         onMouseLeave={handleMouseLeave}
         style={({ pressed }) => [
           { 
-            // DYNAMIC WIDTH: 32% on web/tablet, 48% on mobile
+            
             width: SCREEN_WIDTH > 768 ? '31%' : '48%',               
             height: 140,
             marginBottom: 15,

@@ -22,18 +22,14 @@ class LoginView(APIView):
         if user and user.check_password(password):
             token, _ = Token.objects.get_or_create(user=user)
             return Response({
-                "token": token.key, # This matches session.token in JS
+                "token": token.key, 
                 "role": user.role,
                 "email": user.email
             })
         return Response({"detail": "Invalid credentials"}, status=401)
 
 class StudentMeView(APIView):
-    """
-    Demo profile:
-    GET /api/students/me/?email=student@ua.edu
-    (For demo only; later replace with token.)
-    """
+   
     def get(self, request):
         email = request.query_params.get("email")
         if not email:
@@ -50,10 +46,7 @@ class StudentMeView(APIView):
         return Response(StudentSerializer(user.student).data)
 
 class StudentMyAttendanceView(APIView):
-    """
-    Demo attendance history:
-    GET /api/attendance/my/?email=student@ua.edu
-    """
+   
     def get(self, request):
         email = request.query_params.get("email")
         if not email:

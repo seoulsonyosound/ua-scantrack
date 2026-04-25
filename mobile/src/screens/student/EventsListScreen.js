@@ -13,7 +13,6 @@ export function EventsListScreen({ navigation }) {
   const [events, setEvents] = useState([]);
   const [busy, setBusy] = useState(true);
 
-  // Background Animations
   const shapeRotation = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -87,7 +86,6 @@ export function EventsListScreen({ navigation }) {
   );
 }
 
-// Separate component for the Spring Hover Effect
 const EventTile = ({ ev, navigation, width }) => {
   const scale = useRef(new Animated.Value(1)).current;
 

@@ -6,7 +6,6 @@ import { logout } from "../../utils/logout";
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export function StudentHomeScreen({ navigation }) {
-  // ANIMATION REFS FROM ADMIN HOME
   const shapeRotation = useRef(new Animated.Value(0)).current;
   const bounceAnim = useRef(new Animated.Value(0)).current;
 
@@ -96,7 +95,7 @@ export function StudentHomeScreen({ navigation }) {
           }
         ]} 
       >
-        {/* LARGE BACKGROUND INITIAL */}
+       
         <Animated.Text 
           style={{
             position: 'absolute', top: -10, right: -5, fontSize: 80, fontWeight: '900', color: color, zIndex: 0,
@@ -106,7 +105,6 @@ export function StudentHomeScreen({ navigation }) {
           {label[0]}
         </Animated.Text>
 
-        {/* REVEAL OVERLAY */}
         <Animated.View 
           style={{
             position: 'absolute', backgroundColor: color, opacity: 0.09, zIndex: 1,
@@ -134,14 +132,14 @@ export function StudentHomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: '#F8FAFC' }]}>
-      {/* SHAPES AT BOTTOM LAYER (SYNCED FROM ADMIN) */}
+    
       <View pointerEvents="none" style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 0 }}>
         <Animated.View style={{ position: 'absolute', width: 400, height: 400, borderRadius: 200, backgroundColor: COLORS.navy, top: -150, left: -100, transform: [{ rotate: spin }], opacity: 0.08 }} />
         <Animated.View style={{ position: 'absolute', width: 250, height: 250, borderRadius: 50, backgroundColor: COLORS.orange, bottom: 50, right: -50, transform: [{ rotate: spin }, { translateY: float }], opacity: 0.12 }} />
       </View>
 
       <ScrollView style={{ flex: 1, zIndex: 1 }} contentContainerStyle={{ padding: SCREEN_WIDTH > 600 ? 40 : 20 }}>
-        {/* HEADER SECTION */}
+
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 30 }}>
           <View style={{ flexShrink: 1, marginRight: 10 }}>
             <View style={{ height: 4, width: 30, backgroundColor: COLORS.orange, borderRadius: 2, marginBottom: 10 }} />
@@ -160,14 +158,13 @@ export function StudentHomeScreen({ navigation }) {
           </Pressable>
         </View>
 
-        {/* RESPONSIVE GRID */}
+
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
           <NavTile label="Events" title="Activity Feed" screen="StudentEvents" color="#2d52b6" />
           <NavTile label="Profile" title="My Identity" screen="StudentProfile" color="#64748b" />
           <NavTile label="History" title="Attendance" screen="StudentAttendanceHistory" color="#059669" />
           
-          
-          {/* Alignment Filler */}
+       
           <View style={{ width: SCREEN_WIDTH > 768 ? '31%' : '48.5%' }} /> 
         </View>
       </ScrollView>

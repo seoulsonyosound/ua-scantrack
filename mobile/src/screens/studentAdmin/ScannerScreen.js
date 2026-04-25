@@ -45,7 +45,7 @@ export function ScannerScreen({ route, navigation }) {
     <View style={ui.container}>
       <CameraView style={StyleSheet.absoluteFillObject} onBarcodeScanned={busy ? undefined : handleScanned} />
       
-      {/* GLASS HEADER */}
+
       <View style={ui.header}>
         <View style={{ height: 3, width: 20, backgroundColor: COLORS.orange, borderRadius: 2, marginBottom: 5 }} />
         <Text style={ui.kicker}>SCANNING LIVE</Text>

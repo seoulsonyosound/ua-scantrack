@@ -6,12 +6,10 @@ const getAuthHeaders = () => {
     'Content-Type': 'application/json',
   };
 
-  // 1. Add DRF Token to fix 401 Unauthorized
   if (session.token) {
     headers['Authorization'] = `Token ${session.token}`;
   }
 
-  // 2. Add custom passcode to fix 403 Forbidden
   if (session.adminPasscode) {
     headers['X-ADMIN-PASSCODE'] = session.adminPasscode;
   }
@@ -25,8 +23,7 @@ export async function listEvents() {
 }
 
 export async function createEvent(payload) {
-  // REMOVE getAuthHeaders() here. 
-  // The interceptor in client.js is already doing this work!
+
   const res = await api.post("/events/", payload); 
   return res.data;
 }

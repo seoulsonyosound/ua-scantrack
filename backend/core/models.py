@@ -20,12 +20,10 @@ class Event(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     venue = models.CharField(max_length=120)
-    # FIX: Added blank=True so the serializer doesn't require you to type a PIN in Postman
     pin_code = models.CharField(max_length=4, db_index=True, blank=True) 
     pin_enabled = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
-        # Auto-generate a 4-digit PIN if one wasn't provided
         if not self.pin_code:
             self.pin_code = f"{random.randint(0, 9999):04d}"
         super().save(*args, **kwargs)
@@ -84,3 +82,8 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.email} ({self.role})"
+    
+    
+    
+    
+    

@@ -5,8 +5,6 @@ import {
 } from "react-native";
 import { api } from "../../api/client"; 
 import styles, { COLORS } from "../../styles/styles";
-// add delete if possiible
-// INTERNAL COMPONENT FOR THE SPRING EFFECT
 const StudentCard = ({ s, onEdit, isEditing }) => {
   const scale = useRef(new Animated.Value(1)).current;
 

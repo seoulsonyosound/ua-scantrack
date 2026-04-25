@@ -16,7 +16,7 @@ export function AdminReportsScreen({ navigation }) {
   const shapeRotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Kinetic Background Animation
+   
     Animated.loop(
       Animated.timing(shapeRotation, {
         toValue: 1, duration: 40000, easing: Easing.linear, useNativeDriver: true
@@ -69,7 +69,7 @@ export function AdminReportsScreen({ navigation }) {
     }
   }
 
-  // Report Card Component with the requested style
+  
   const ReportCard = ({ title, description, onExport, index, isBusy }) => {
     const scale = useRef(new Animated.Value(1)).current;
     const opacity = useRef(new Animated.Value(0)).current;
@@ -120,7 +120,7 @@ export function AdminReportsScreen({ navigation }) {
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: '#F8FAFC' }]}>
-      {/* KINETIC BACKGROUND */}
+     
       <View pointerEvents="none" style={{ position: 'absolute', width: '100%', height: '100%' }}>
         <Animated.View style={{ 
           position: 'absolute', width: 700, height: 700, borderRadius: 350, 
@@ -153,7 +153,7 @@ export function AdminReportsScreen({ navigation }) {
         </View>
       </ScrollView>
 
-      {/* FLOATING BACK BUTTON - Matches "ua-scantrack" UI */}
+    
       <View style={{
         position: 'absolute',
         bottom: 0,

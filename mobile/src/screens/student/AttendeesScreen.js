@@ -46,11 +46,11 @@ export function AttendeesScreen({ route, navigation }) {
     })();
   }, []);
 
-  // Updated filter logic to ensure ID matching works regardless of type
+  
   const attendees = useMemo(() => {
     return records
       .filter((r) => {
-        // Checking r.event.id if the API returns a nested object, or r.event if it's a flat ID
+       
         const recordEventId = r.event?.id || r.event;
         return String(recordEventId) === String(eventId);
       })
@@ -64,7 +64,7 @@ export function AttendeesScreen({ route, navigation }) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
       
-      {/* SEAMLESS BACKGROUND SHAPES */}
+      
       <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
         <Animated.View style={{ 
           position: 'absolute', width: 450, height: 450, borderRadius: 225, 
@@ -117,7 +117,7 @@ export function AttendeesScreen({ route, navigation }) {
         </ScrollView>
       </Animated.View>
 
-      {/* FLOATING TRANSPARENT FOOTER */}
+      
       <View style={{ 
         padding: 24, 
         backgroundColor: 'transparent', 
@@ -135,9 +135,7 @@ export function AttendeesScreen({ route, navigation }) {
   );
 }
 
-/**
- * StudentCard Component with Hover Spring Animation
- */
+
 const StudentCard = ({ student }) => {
   const scale = useRef(new Animated.Value(1)).current;
 

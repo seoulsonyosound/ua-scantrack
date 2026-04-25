@@ -12,13 +12,12 @@ router.register("attendance", AttendanceViewSet)
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # Custom endpoints for "me" and login (ALWAYS before the router include)
     path("api/students/me/", StudentMeView.as_view()),
-    path("api/me/", StudentMeView.as_view()),  # optional, for testing
+    path("api/me/", StudentMeView.as_view()), 
 
     path("api/auth/login/", LoginView.as_view()),
     path("api/attendance/my/", StudentMyAttendanceView.as_view()),
 
-    # Default router endpoints
+
     path("api/", include(router.urls)),
 ]

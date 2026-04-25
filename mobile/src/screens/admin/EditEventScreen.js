@@ -27,7 +27,7 @@ export function EditEventScreen({ navigation, route }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Start background rotation & fade in
+  
     Animated.parallel([
       Animated.loop(
         Animated.timing(shapeRotation, { 
@@ -73,14 +73,14 @@ export function EditEventScreen({ navigation, route }) {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 60 }}>
-        {/* HEADER SECTION */}
+      
         <Animated.View style={{ opacity: fadeAnim, marginBottom: 30 }}>
           <View style={{ height: 4, width: 40, backgroundColor: COLORS.orange, borderRadius: 2, marginBottom: 12 }} />
           <Text style={[styles.kicker, { letterSpacing: 4 }]}>ADMIN CONSOLE</Text>
           <Text style={[styles.heroTitle, { fontSize: 32 }]}>Edit Event</Text>
         </Animated.View>
 
-        {/* FORM CARD */}
+     
         <Animated.View style={{ 
             opacity: fadeAnim,
             backgroundColor: 'white', 

@@ -24,7 +24,7 @@ export function CreateEventScreen({ navigation, route }) {
   });
 
   useEffect(() => {
-    // Branded Kinetic Background
+  
     Animated.loop(
       Animated.timing(shapeRotation, { 
         toValue: 1, 
@@ -34,7 +34,7 @@ export function CreateEventScreen({ navigation, route }) {
       })
     ).start();
 
-    // Auto-generate a 4-digit PIN
+    
     const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
     setField("pin_code", randomPin);
   }, []);
@@ -71,7 +71,7 @@ export function CreateEventScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: '#F8FAFC' }]}>
-      {/* Branded Kinetic Background */}
+     
       <View pointerEvents="none" style={{ position: 'absolute', width: '100%', height: '100%' }}>
         <Animated.View style={{ 
           position: 'absolute', width: 500, height: 500, borderRadius: 250, 

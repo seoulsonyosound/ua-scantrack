@@ -5,11 +5,12 @@ from django.utils import timezone
 from django.db import IntegrityError
 from django.http import HttpResponse
 import csv
+
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 User = get_user_model()
-from rest_framework.authentication import TokenAuthentication, SessionAuthentication
+from rest_framework.authentication import TokenAuthentication
 
 
 from .models import Student, Event, Attendance
@@ -18,12 +19,9 @@ from rest_framework.permissions import BasePermission
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 
-
-# ✅ Added: CSV renderer to prevent 406 Not Acceptable (content negotiation)
 from rest_framework.renderers import BaseRenderer
 
-
-ADMIN_PASSCODE = "1234"  # demo passcode; you can move to settings/env later
+ADMIN_PASSCODE = "1234" 
 
 
 class CSVRenderer(BaseRenderer):
@@ -31,8 +29,7 @@ class CSVRenderer(BaseRenderer):
     format = "csv"
     charset = "utf-8"
 
-    # Normally DRF uses this to render Response() bodies. We return HttpResponse for CSV,
-    # but including this renderer prevents DRF from rejecting requests with 406.
+   
     def render(self, data, accepted_media_type=None, renderer_context=None):
         if data is None:
             return ""
@@ -46,34 +43,48 @@ class IsAdminPasscode(BasePermission):
         if request.method == 'GET':
             return True
         
-        # This handles both X-Admin-Passcode and X-ADMIN-PASSCODE
         passcode = request.headers.get('X-Admin-Passcode') or request.META.get('HTTP_X_ADMIN_PASSCODE')
         
         return passcode == ADMIN_PASSCODE
 
-
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all().order_by("last_name")
     serializer_class = StudentSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        student_no = instance.student_no
+        self.perform_destroy(instance)
+        
+        return Response(
+            {"detail": f"Student '{student_no}' has been deleted successfully."},
+            status=status.HTTP_200_OK
+        )
 
 
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all().order_by('-event_date')
     serializer_class = EventSerializer
     
-    # Force TokenAuthentication ONLY. 
-    # This removes the hidden CSRF requirement that causes the 403.
     authentication_classes = [TokenAuthentication]
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'validate_pin']:
             return [AllowAny()]
         
-        # For create, update, delete
         return [IsAdminPasscode()]
     
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        event_title = instance.title
+        self.perform_destroy(instance)
+        
+        return Response(
+            {"detail": f"Event '{event_title}' has been deleted successfully."},
+            status=status.HTTP_200_OK
+        )
     
-
+    
     @action(detail=False, methods=["get"])
     def upcoming(self, request):
         today = timezone.localdate()
@@ -93,15 +104,9 @@ class EventViewSet(viewsets.ModelViewSet):
 
         return Response(EventSerializer(event).data, status=status.HTTP_200_OK)
     
-
-    # ✅ Added renderer_classes=[CSVRenderer] to stop 406 Not Acceptable
     @action(detail=True, methods=["get"], renderer_classes=[CSVRenderer])
     def report_csv(self, request, pk=None):
-        """
-        Admin report:
-        GET /api/events/{event_id}/report_csv/
-        Returns full attendance CSV for this event.
-        """
+       
         event = self.get_object()
 
         qs = (
@@ -150,14 +155,10 @@ class EventViewSet(viewsets.ModelViewSet):
 
         return resp
 
-    # ✅ Added renderer_classes=[CSVRenderer] to stop 406 Not Acceptable
+
     @action(detail=True, methods=["get"], renderer_classes=[CSVRenderer])
     def attendees_csv(self, request, pk=None):
-        """
-        Admin attendees list (checked-in students only):
-        GET /api/events/{event_id}/attendees_csv/
-        Returns a CSV of unique students who have attendance records for this event.
-        """
+    
         event = self.get_object()
 
         qs = (
@@ -186,7 +187,6 @@ class EventViewSet(viewsets.ModelViewSet):
             "time_in",
         ])
 
-        # Attendance has unique_together(student,event), so each row is already unique per student.
         for a in qs:
             s = a.student
             writer.writerow([
@@ -204,6 +204,7 @@ class EventViewSet(viewsets.ModelViewSet):
             ])
 
         return resp
+    
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
@@ -212,10 +213,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == "scan_checkin":
-            return [AllowAny()]  # student admin scanning
+            return [AllowAny()]  
         if self.request.method in ("GET",):
-            return [AllowAny()]  # demo; later restrict
-        return [IsAdminPasscode()]  # create/update/delete requires admin passcode
+            return [AllowAny()]  
+        return [IsAdminPasscode()]  
 
     def get_queryset(self):
         qs = super().get_queryset()

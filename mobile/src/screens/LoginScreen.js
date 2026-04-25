@@ -57,13 +57,10 @@ export function LoginScreen({ navigation }) {
         student_id: response.student_id
       };
 
-    // 1. Save to PERSISTENT storage (for when the app restarts)
     if (response.token) {
       await AsyncStorage.setItem('userToken', response.token);
     }
 
-    // 2. Save to MEMORY (the session object)
-    // This is the most important part for fixing your 401/403 errors!
     session.token = response.token; 
     session.user = {
       email: response.email,
@@ -71,18 +68,18 @@ export function LoginScreen({ navigation }) {
       student_id: response.student_id
     };
 
-    // 3. Navigate based on role
+
     navigation.reset({ 
       index: 0, 
       routes: [{ name: response.role === "ADMIN" ? "AdminHome" : "StudentHome" }] 
     });
 
   } catch (e) {
-    // Check if the server sent a specific error message
+   
     const errorMsg = e?.response?.data?.detail || "Invalid email or password.";
     setLoginError(errorMsg);
 
-    // Security: Clear old tokens on failure
+   
     session.token = null;
     await AsyncStorage.removeItem('userToken');
   } finally {
@@ -213,7 +210,7 @@ const StyledInput = ({ label, value, onChange, secure = false, placeholder, logi
         <TextInput
           placeholder={placeholder}
           value={value}
-          onChangeText={onChange} // This handles the state update correctly
+          onChangeText={onChange} 
           secureTextEntry={secure}
           textAlign="center"
           onFocus={() => setIsFocused(true)}

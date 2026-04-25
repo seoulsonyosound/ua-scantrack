@@ -22,7 +22,7 @@ export function RoleSelectScreen({ navigation }) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
-      {/* SEAMLESS ANIMATED BACKGROUND */}
+  
       <View pointerEvents="none" style={{ position: 'absolute', width: '100%', height: '100%' }}>
         <Animated.View style={{ 
           position: 'absolute', width: 500, height: 500, borderRadius: 250, 
@@ -56,7 +56,7 @@ export function RoleSelectScreen({ navigation }) {
   );
 }
 
-// Role-specific tile with Spring Hover Effect
+
 const RoleTile = ({ title, subtitle, onPress, color }) => {
   const scale = useRef(new Animated.Value(1)).current;
   const handleIn = () => Animated.spring(scale, { toValue: 1.03, friction: 4, useNativeDriver: true }).start();

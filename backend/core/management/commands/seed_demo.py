@@ -7,7 +7,7 @@ class Command(BaseCommand):
     help = "Seed demo accounts: admin@ua.edu and student@ua.edu"
 
     def handle(self, *args, **options):
-        # Create a sample student record
+    
         student, _ = Student.objects.get_or_create(
             student_no="2021000020",
             defaults=dict(

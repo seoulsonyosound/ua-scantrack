@@ -6,21 +6,21 @@ import {
 import { listEvents, deleteEvent } from "../../api/events";
 import styles, { COLORS } from "../../styles/styles";
 
-// --- STYLED & ANIMATED CARD ---
+
 const EventCard = ({ ev, navigation, onRefresh, onConfirmDelete, deletingId, index }) => {
   const eventId = ev.id || ev._id;
   const isDeleting = deletingId === eventId;
 
-  // ANIMATION REFS
+ 
   const cardScale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Fade in and slide up effect on mount
+
     Animated.timing(opacity, {
       toValue: 1,
       duration: 400,
-      delay: index * 100, // Staggered entry
+      delay: index * 100, 
       useNativeDriver: true,
     }).start();
   }, []);
@@ -56,7 +56,7 @@ const EventCard = ({ ev, navigation, onRefresh, onConfirmDelete, deletingId, ind
           web: { boxShadow: '0 4px 12px rgba(100, 116, 139, 0.08)' }
         })
       }}>
-        {/* Left Side: Info */}
+       
         <Pressable 
           onMouseEnter={() => handleHover(true)}
           onMouseLeave={() => handleHover(false)}
@@ -73,7 +73,7 @@ const EventCard = ({ ev, navigation, onRefresh, onConfirmDelete, deletingId, ind
           <Text style={{ color: '#64748B', fontSize: 13 }}>{ev.venue}</Text>
         </Pressable>
 
-        {/* Right Side: Actions */}
+       
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <Pressable 
             onPress={() => navigation.navigate("EditEvent", { event: ev, onDone: onRefresh })} 
@@ -110,7 +110,7 @@ export function ManageEventsScreen({ navigation }) {
   const [busy, setBusy] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   
-  // Background Circle Animation
+  
   const spinValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => { 
@@ -161,7 +161,7 @@ export function ManageEventsScreen({ navigation }) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
-      {/* KINETIC BACKGROUND */}
+      
       <View pointerEvents="none" style={{ position: 'absolute', zIndex: -1 }}>
         <Animated.View style={{ 
           width: 500, height: 500, borderRadius: 250, backgroundColor: COLORS.navy, 

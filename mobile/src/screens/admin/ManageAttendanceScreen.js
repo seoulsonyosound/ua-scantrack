@@ -12,7 +12,7 @@ export function ManageAttendanceScreen() {
   const shapeRotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Start background animation
+    
     Animated.loop(
       Animated.timing(shapeRotation, {
         toValue: 1, duration: 40000, easing: Easing.linear, useNativeDriver: true
@@ -35,11 +35,11 @@ export function ManageAttendanceScreen() {
     inputRange: [0, 1], outputRange: ['0deg', '360deg']
   });
 
-  // INTERNAL COMPONENT FOR CARDS WITH EFFECTS
+
   const AttendanceCard = ({ item }) => {
     const scale = useRef(new Animated.Value(1)).current;
 
-    // Safety check for date formatting
+   
     const formatDate = (dateString) => {
       if (!dateString) return "No Date";
       const date = new Date(dateString);
@@ -82,7 +82,7 @@ export function ManageAttendanceScreen() {
             </View>
           </View>
 
-          {/* EVENT SECTION */}
+          
           <View style={{ marginTop: 18, paddingTop: 15, borderTopWidth: 1, borderTopColor: '#F8FAFC' }}>
             <Text style={{ fontSize: 10, fontWeight: '900', color: '#94A3B8', letterSpacing: 1.5 }}>
               EVENT LOGGED
@@ -104,7 +104,7 @@ export function ManageAttendanceScreen() {
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: '#F8FAFC' }]}>
-      {/* KINETIC BACKGROUND EFFECT */}
+    
       <View pointerEvents="none" style={{ position: 'absolute', width: '100%', height: '100%' }}>
         <Animated.View style={{
           position: 'absolute', width: 600, height: 600, borderRadius: 300,
