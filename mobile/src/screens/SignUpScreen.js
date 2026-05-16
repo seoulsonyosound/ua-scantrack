@@ -50,6 +50,11 @@ export function SignUpScreen({ navigation, route }) {
       return;
     }
 
+    if (!email.trim().toLowerCase().endsWith('@ua.edu.ph')) {
+      Alert.alert("Invalid Email", "Please use your official university email (e.g., name.student@ua.edu.ph) to register.");
+      return;
+    }
+
     setBusy(true);
     try {
      

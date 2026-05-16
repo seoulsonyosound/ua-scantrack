@@ -33,22 +33,9 @@ export function LoginScreen({ navigation }) {
     ]).start();
   }, []);
 
-  // SIGN UP LOGIC: Restricts to @ua.edu.ph institutional accounts
   const handleSignUp = () => {
-  console.log("Sign Up pressed for email:", email); // Debugging line
-  const emailDomain = email.split('@')[1]?.toLowerCase();
-
-  if (emailDomain !== 'ua.edu.ph') {
-    Alert.alert(
-      "Invalid Domain", 
-      "Please use your official university email (e.g., name.student@ua.edu.ph) to register."
-    );
-    return;
-  }
-  
-  // This line only runs if the domain is exactly ua.edu.ph
-  navigation.navigate("SignUp", { initialEmail: email });
-};
+    navigation.navigate("SignUp", { initialEmail: email.endsWith('@ua.edu.ph') ? email : "" });
+  };
 
   const spin = shapeRotation.interpolate({
     inputRange: [0, 1],
@@ -133,7 +120,11 @@ export function LoginScreen({ navigation }) {
             {/* NEW SIGN UP OPTION */}
             <Pressable 
               onPress={handleSignUp}
-              style={{ marginTop: 25, alignItems: 'center' }}
+              style={({ pressed }) => [
+                { marginTop: 25, alignItems: 'center' },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.98 }] }
+              ]}
+              hitSlop={15}
             >
               <Text style={{ color: '#94A3B8', fontWeight: '700', fontSize: 14 }}>
                 New student? <Text style={{ color: COLORS.orange }}>Sign Up with GSuite</Text>
