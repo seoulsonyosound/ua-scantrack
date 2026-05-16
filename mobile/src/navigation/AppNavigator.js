@@ -26,6 +26,7 @@ import { AdminReportsScreen } from "../screens/admin/AdminReportsScreen";
 import { EditEventScreen } from "../screens/admin/EditEventScreen";
 import { QuickScanScreen } from "../screens/admin/QuickScanScreen";
 import { ManageStudentScreen } from "../screens/admin/ManageStudentScreen";
+import { SignUpScreen } from "../screens/SignUpScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,7 @@ export function AppNavigator() {
     <Stack.Navigator initialRouteName="Login">
       {/* Demo Login */}
       <Stack.Screen name="Login" component={LoginScreen} options={{ title: "Login" }} />
+      <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
 
       {/* Student Admin (PIN scanner is still accessible without login) */}
       <Stack.Screen name="PinLogin" component={PinLoginScreen} options={{ title: "Student Admin Portal" }} />

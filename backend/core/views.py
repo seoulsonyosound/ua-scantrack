@@ -65,6 +65,7 @@ class StudentViewSet(viewsets.ModelViewSet):
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all().order_by('-event_date')
     serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]
     
     authentication_classes = [TokenAuthentication]
 
@@ -270,3 +271,55 @@ class StudentMeView(APIView):
             return Response({'detail': 'No student profile found.'}, status=404)
         serializer = StudentSerializer(app_user.student)
         return Response(serializer.data)
+    
+class RegisterView(APIView):
+    # This allows anyone to access the registration endpoint
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        data = request.data
+        email = data.get('email')
+        password = data.get('password')
+        first_name = data.get('first_name', '')
+        last_name = data.get('last_name', '')
+        student_id = data.get('student_id', '')
+
+        if not email or not password:
+            return Response({"detail": "Email and password required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Create the User
+            user = User.objects.create_user(
+                username=email, 
+                email=email, 
+                password=password,
+                first_name=first_name,
+                last_name=last_name
+            )
+            # Create the associated Student profile
+            Student.objects.create(user=user, student_no=student_id)
+            
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key}, status=status.HTTP_201_CREATED)
+        except IntegrityError:
+            return Response({"detail": "User already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+class LoginView(APIView):
+    # This ensures an old/invalid token doesn't block the login attempt
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        
+        try:
+            user = User.objects.get(email=email)
+            if user.check_password(password):
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response({
+                    "token": token.key,
+                    "is_staff": user.is_staff
+                }, status=status.HTTP_200_OK)
+            return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)

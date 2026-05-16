@@ -1,4 +1,3 @@
-
 import { api } from "./client";
 
 export async function login(email, password) {
@@ -6,8 +5,13 @@ export async function login(email, password) {
   return res.data; 
 }
 
+export async function register(data) {
+  const res = await api.post("/auth/register/", data);
+  return res.data;
+}
+
 export async function getStudentMe(email) {
-  const res = await api.get('/students/me/');
+  const res = await api.get('/students/me/', { params: { email } });
   return res.data;
 }
 
@@ -15,3 +19,4 @@ export async function getMyAttendance(email) {
   const res = await api.get("/attendance/my/", { params: { email } });
   return res.data;
 }
+

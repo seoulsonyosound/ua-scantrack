@@ -50,7 +50,7 @@ class Command(BaseCommand):
 
         # Student user
         student_user, _ = AppUser.objects.update_or_create(
-            email="student@ua.edu",
+            email="student@ua.edu.ph",
             defaults=dict(
                 role=AppUser.ROLE_STUDENT,
                 student=student,
@@ -61,7 +61,7 @@ class Command(BaseCommand):
 
         # Admin user
         admin_user, _ = AppUser.objects.update_or_create(
-            email="admin@ua.edu",
+            email="admin@ua.edu.ph",
             defaults=dict(
                 role=AppUser.ROLE_ADMIN,
                 student=None,
@@ -72,6 +72,6 @@ class Command(BaseCommand):
         admin_user.password = make_password("admin123")
         admin_user.save()
 
-        self.stdout.write(self.style.SUCCESS("Seeded demo users: admin@ua.edu / student@ua.edu"))
+        self.stdout.write(self.style.SUCCESS("Seeded demo users: admin@ua.edu.ph / student@ua.edu.ph"))
         self.stdout.write(self.style.SUCCESS("Passwords: admin123, student123"))
         self.stdout.write(self.style.WARNING("DEMO ONLY: passwords stored in Django hash."))

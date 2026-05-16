@@ -6,6 +6,7 @@ import {
 import { api } from "../../api/client";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import styles, { COLORS } from "../../styles/styles";
+import { formatTime12H } from "../../utils/time";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -105,7 +106,9 @@ const EventTile = ({ ev, navigation, width }) => {
       >
         <View style={{ flex: 1, paddingRight: 10 }}>
           <Text style={{ fontSize: 18, fontWeight: "900", color: COLORS.navy }}>{ev.title}</Text>
-          <Text style={{ color: COLORS.orange, fontWeight: "800", fontSize: 13, marginTop: 4 }}>{ev.event_date}</Text>
+          <Text style={{ color: COLORS.orange, fontWeight: "800", fontSize: 13, marginTop: 4 }}>
+            {ev.event_date} • {formatTime12H(ev.start_time)}
+          </Text>
           <Text style={{ color: COLORS.muted, fontSize: 12, marginTop: 2 }}>{ev.venue}</Text>
         </View>
         <View style={{ backgroundColor: COLORS.navy, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 }}>

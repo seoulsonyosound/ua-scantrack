@@ -7,8 +7,8 @@ class Student(models.Model):
     student_no = models.CharField(max_length=50, unique=True)
     first_name = models.CharField(max_length=80)
     last_name = models.CharField(max_length=80)
-    course = models.CharField(max_length=80)
-    year_level = models.IntegerField()
+    course = models.CharField(max_length=80, default="BSIT")
+    year_level = models.IntegerField(default=1)
 
     def __str__(self):
         return f"{self.student_no} - {self.last_name}"
@@ -70,18 +70,14 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = [(ROLE_ADMIN, "Admin"), (ROLE_STUDENT, "Student")]
 
     email = models.EmailField(unique=True)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
-    student = models.OneToOneField("Student", null=True, blank=True, on_delete=models.SET_NULL)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=ROLE_STUDENT)
+    student = models.OneToOneField(Student, null=True, blank=True, on_delete=models.SET_NULL)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
     objects = AppUserManager()
-
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["role"]
-
-    def __str__(self):
-        return f"{self.email} ({self.role})"
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
     
     
     

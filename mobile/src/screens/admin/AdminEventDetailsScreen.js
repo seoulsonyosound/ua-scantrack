@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { SafeAreaView, Text, View, Pressable, ScrollView, Animated, Easing } from "react-native";
 import styles, { COLORS } from "../../styles/styles";
+import { formatTime12H } from "../../utils/time";
 
 export function AdminEventDetailsScreen({ navigation, route }) {
   const event = route?.params?.event;
@@ -30,7 +31,9 @@ export function AdminEventDetailsScreen({ navigation, route }) {
         <View style={{ backgroundColor: 'white', padding: 25, borderRadius: 24, elevation: 4, borderWidth: 1, borderColor: '#F1F5F9', marginTop: 20 }}>
           <Text style={{ fontSize: 10, fontWeight: '800', color: '#94A3B8', letterSpacing: 1, marginBottom: 8 }}>LOCATION & SCHEDULE</Text>
           <Text style={{ fontSize: 18, color: COLORS.navy, fontWeight: '700' }}>{event.venue}</Text>
-          <Text style={{ fontSize: 14, color: COLORS.orange, fontWeight: '800', marginTop: 2 }}>{event.event_date} • {event.start_time} - {event.end_time}</Text>
+          <Text style={{ fontSize: 14, color: COLORS.orange, fontWeight: '800', marginTop: 2 }}>
+            {event.event_date} • {formatTime12H(event.start_time)} - {formatTime12H(event.end_time)}
+          </Text>
 
           <View style={{ padding: 20, backgroundColor: '#F8FAFC', borderRadius: 20, marginVertical: 25, alignItems: 'center' }}>
              <Text style={{ fontSize: 10, fontWeight: '800', color: '#94A3B8', letterSpacing: 2 }}>ACCESS PIN</Text>

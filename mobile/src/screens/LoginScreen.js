@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { 
   SafeAreaView, Text, TextInput, View, KeyboardAvoidingView, 
-  Platform, Pressable, Animated, Easing 
+  Platform, Pressable, Animated, Easing, Alert 
 } from "react-native";
 import { login } from "../api/auth";
 import { session } from "../session";
@@ -33,6 +33,23 @@ export function LoginScreen({ navigation }) {
     ]).start();
   }, []);
 
+  // SIGN UP LOGIC: Restricts to @ua.edu.ph institutional accounts
+  const handleSignUp = () => {
+  console.log("Sign Up pressed for email:", email); // Debugging line
+  const emailDomain = email.split('@')[1]?.toLowerCase();
+
+  if (emailDomain !== 'ua.edu.ph') {
+    Alert.alert(
+      "Invalid Domain", 
+      "Please use your official university email (e.g., name.student@ua.edu.ph) to register."
+    );
+    return;
+  }
+  
+  // This line only runs if the domain is exactly ua.edu.ph
+  navigation.navigate("SignUp", { initialEmail: email });
+};
+
   const spin = shapeRotation.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg']
@@ -48,19 +65,6 @@ export function LoginScreen({ navigation }) {
   setLoginError("");
   try {
     const response = await login(email.trim(), password);
-    console.log("LOGIN SUCCESSFUL:", response);
-
-    session.token = response.token; 
-      session.user = {
-        email: response.email,
-        role: response.role,
-        student_id: response.student_id
-      };
-
-    if (response.token) {
-      await AsyncStorage.setItem('userToken', response.token);
-    }
-
     session.token = response.token; 
     session.user = {
       email: response.email,
@@ -68,6 +72,9 @@ export function LoginScreen({ navigation }) {
       student_id: response.student_id
     };
 
+    if (response.token) {
+      await AsyncStorage.setItem('userToken', response.token);
+    }
 
     navigation.reset({ 
       index: 0, 
@@ -75,77 +82,14 @@ export function LoginScreen({ navigation }) {
     });
 
   } catch (e) {
-   
     const errorMsg = e?.response?.data?.detail || "Invalid email or password.";
     setLoginError(errorMsg);
-
-   
     session.token = null;
     await AsyncStorage.removeItem('userToken');
   } finally {
     setBusy(false);
   }
 }
-
-  const HoverButton = ({ onPress, title, isPrimary, flex, disabled }) => {
-    const scale = useRef(new Animated.Value(1)).current;
-    
-    const handleHover = (isHovering) => {
-      if (Platform.OS !== 'web') return;
-      Animated.spring(scale, {
-        toValue: isHovering ? 1.02 : 1,
-        friction: 8,
-        useNativeDriver: true,
-      }).start();
-    };
-
-    return (
-      <Animated.View style={{ flex, transform: [{ scale }] }}>
-        <Pressable
-          onPress={onPress}
-          disabled={disabled}
-          onMouseEnter={() => handleHover(true)}
-          onMouseLeave={() => handleHover(false)}
-          style={({ pressed }) => [
-            {
-              paddingVertical: 22,
-              paddingHorizontal: 10,
-              borderRadius: 22,
-              alignItems: 'center',
-              justifyContent: 'center',
-            },
-            isPrimary ? {
-              backgroundColor: pressed ? '#1e293b' : COLORS.navy,
-              elevation: 8,
-              shadowColor: COLORS.navy,
-              shadowOpacity: 0.25,
-              shadowRadius: 15,
-              shadowOffset: { width: 0, height: 8 }
-            } : {
-              backgroundColor: pressed ? '#f8fafc' : 'white',
-              borderWidth: 2,
-              borderColor: '#E2E8F0',
-            }
-          ]}
-        >
-          <Text 
-            numberOfLines={1}
-            style={{ 
-              color: isPrimary ? 'white' : COLORS.navy, 
-              fontWeight: '900', 
-              fontSize: 14, 
-              letterSpacing: 1,
-              textAlign: 'center'
-            }}
-          >
-            {title}
-          </Text>
-        </Pressable>
-      </Animated.View>
-    );
-  };
-
-  
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: '#F8FAFC' }]}>
@@ -165,7 +109,7 @@ export function LoginScreen({ navigation }) {
           </View>
 
           <View style={{ width: '100%', maxWidth: 420 }}>
-            <StyledInput label="UNIVERSITY EMAIL" value={email} onChange={(v) => { setEmail(v); setLoginError(""); }} placeholder="user@ua.edu" />
+            <StyledInput label="UNIVERSITY EMAIL" value={email} onChange={(v) => { setEmail(v); setLoginError(""); }} placeholder="user@ua.edu.ph" />
             <StyledInput label="PASSWORD" value={password} onChange={(v) => { setPassword(v); setLoginError(""); }} secure={true} placeholder="••••••••" />
 
             {loginError ? <Text style={{ color: "#ef4444", fontWeight: '800', fontSize: 13, marginBottom: 20, textAlign: 'center' }}>{loginError}</Text> : null}
@@ -185,6 +129,16 @@ export function LoginScreen({ navigation }) {
                 flex={1.6} 
               />
             </View>
+
+            {/* NEW SIGN UP OPTION */}
+            <Pressable 
+              onPress={handleSignUp}
+              style={{ marginTop: 25, alignItems: 'center' }}
+            >
+              <Text style={{ color: '#94A3B8', fontWeight: '700', fontSize: 14 }}>
+                New student? <Text style={{ color: COLORS.orange }}>Sign Up with GSuite</Text>
+              </Text>
+            </Pressable>
           </View>
 
           <View style={{ marginTop: 80 }}>

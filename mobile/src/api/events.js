@@ -22,6 +22,10 @@ export async function listEvents() {
   return res.data;
 }
 
+export async function getEvent(id) {
+  const res = await api.get(`/events/${id}/`, getAuthHeaders());
+  return res.data;
+}
 export async function createEvent(payload) {
 
   const res = await api.post("/events/", payload); 
